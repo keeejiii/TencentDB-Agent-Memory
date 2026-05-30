@@ -370,9 +370,18 @@ export function registerOffload(api: any, offloadConfig: OffloadConfig): void {
       const baseUrl = providerCfg?.baseUrl ?? providerCfg?.baseURL;
       const apiKey = providerCfg?.apiKey;
 
-      if (baseUrl && apiKey) {
+      let localLlmBaseUrl = baseUrl;
+      if (typeof localLlmBaseUrl === "string" && providerKey === "bailu") {
+        localLlmBaseUrl = localLlmBaseUrl.replace(/\/+$/, "");
+        if (localLlmBaseUrl.endsWith("/openapi")) {
+          localLlmBaseUrl = `${localLlmBaseUrl}/v1`;
+          logger.debug?.(`[context-offload] adjusted Bailu local-llm baseUrl for OpenAI-compatible API: ${localLlmBaseUrl}`);
+        }
+      }
+
+      if (localLlmBaseUrl && apiKey) {
         backendClient = new LocalLlmClient(
-          { baseUrl, apiKey, model: modelId, temperature: offloadConfig.temperature, timeoutMs: offloadConfig.backendTimeoutMs },
+          { baseUrl: localLlmBaseUrl, apiKey, model: modelId, temperature: offloadConfig.temperature, timeoutMs: offloadConfig.backendTimeoutMs },
           logger,
         );
       } else {

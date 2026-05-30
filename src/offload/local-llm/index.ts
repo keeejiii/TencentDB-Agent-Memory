@@ -137,7 +137,7 @@ export class LocalLlmClient {
       systemPrompt: L2_SYSTEM_PROMPT,
       userPrompt,
       label: "L2",
-      timeoutMs: 120_000, // L2 may take longer due to complex prompts
+      timeoutMs: Math.max(this.config.timeoutMs, 180_000), // L2 is heavier; honor config when larger, otherwise use a safer 180s floor
     }, this.logger);
 
     const result = parseL2Response(raw);
